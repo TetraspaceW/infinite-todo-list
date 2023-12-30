@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
+export const revalidate = 60;
+
 export async function GET() {
   const { SUPABASE_ENDPOINT, SUPABASE_TOKEN } = process.env;
   if (SUPABASE_ENDPOINT && SUPABASE_TOKEN) {
