@@ -1,12 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import useSWR from "swr";
 
 type Todo = {
   name: string;
 };
 
-export default function Home() {
+const Home = () => {
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
   const { data } = useSWR("/api/todos", fetcher);
 
@@ -18,6 +19,11 @@ export default function Home() {
           <li key={todo.name}>{todo.name}</li>
         ))}
       </ul>
+      <p>
+        <Link href="/auth">Log in</Link>
+      </p>
     </main>
   );
-}
+};
+
+export default Home;
