@@ -7,10 +7,12 @@ const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const { SUPABASE_ENDPOINT, SUPERBASE_ANON_TOKEN } = process.env;
+  const SUPABASE_ENDPOINT = process.env.SUPABASE_ENDPOINT;
+  const SUPABASE_ANON_TOKEN = process.env.SUPABASE_ANON_TOKEN;
+
   const supabase = createClient(
     SUPABASE_ENDPOINT ?? "",
-    SUPERBASE_ANON_TOKEN ?? ""
+    SUPABASE_ANON_TOKEN ?? ""
   );
 
   const login = async () => {
@@ -27,6 +29,12 @@ const LoginPage = () => {
       options: {
         emailRedirectTo: "https://todo.thetetra.space/",
       },
+    });
+  };
+
+  const loginWithDiscord = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "discord",
     });
   };
 
@@ -52,6 +60,9 @@ const LoginPage = () => {
           </button>
           <button type="button" onClick={register}>
             Register
+          </button>
+          <button type="button" onClick={loginWithDiscord}>
+            Login with Discord
           </button>
         </form>
       </div>
