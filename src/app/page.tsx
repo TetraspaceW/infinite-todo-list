@@ -3,6 +3,8 @@
 import Link from "next/link";
 import useSWR from "swr";
 
+import { supabase } from "./supabase";
+
 type Todo = {
   name: string;
 };

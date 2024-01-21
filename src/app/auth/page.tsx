@@ -1,19 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../supabase";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
-  const SUPABASE_ENDPOINT = process.env.SUPABASE_ENDPOINT;
-  const SUPABASE_ANON_TOKEN = process.env.SUPABASE_ANON_TOKEN;
-
-  const supabase = createClient(
-    SUPABASE_ENDPOINT ?? "",
-    SUPABASE_ANON_TOKEN ?? ""
-  );
 
   const login = async () => {
     const { data, error } = await supabase.auth.signInWithPassword({
