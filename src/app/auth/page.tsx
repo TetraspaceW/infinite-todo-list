@@ -35,24 +35,26 @@ const LoginPage = () => {
       <div>
         <h1>Login Page</h1>
         <form>
-          <label htmlFor="username">Username</label>
-          <input
-            id="username"
-            type="text"
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button type="button" onClick={login}>
-            Login
-          </button>
-          <button type="button" onClick={register}>
-            Register
-          </button>
+          {
+            // <label htmlFor="username">Username</label>
+            // <input
+            //   id="username"
+            //   type="text"
+            //   onChange={(e) => setUsername(e.target.value)}
+            // />
+            // <label htmlFor="password">Password</label>
+            // <input
+            //   id="password"
+            //   type="password"
+            //   onChange={(e) => setPassword(e.target.value)}
+            // />
+            // <button type="button" onClick={login}>
+            //   Login
+            // </button>
+            // <button type="button" onClick={register}>
+            //   Register
+            // </button>
+          }
           <button type="button" onClick={loginWithDiscord}>
             Login with Discord
           </button>
