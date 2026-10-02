@@ -13,4 +13,5 @@ export type User = {
 
 export type Me = {
   user: User | null;
+  canEdit: boolean;
 };

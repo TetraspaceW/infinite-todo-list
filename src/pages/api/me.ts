@@ -1,11 +1,12 @@
 import type { APIRoute } from "astro";
-import { currentUser } from "../../lib/backend/server";
+import { canEdit, currentUser } from "../../lib/backend/server";
 import type { Me } from "../../lib/backend/types";
 import { serverError } from "../../lib/http";
 
 export const GET: APIRoute = async ({ request }) => {
   try {
-    const me: Me = { user: await currentUser(request) };
+    const user = await currentUser(request);
+    const me: Me = { user, canEdit: canEdit(user) };
     return Response.json(me, {
       headers: { "Cache-Control": "private, no-store" },
     });

@@ -4,7 +4,7 @@
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { SUPABASE_ENDPOINT } from "astro:env/client";
-import { SUPABASE_TOKEN } from "astro:env/server";
+import { OWNER_USER_ID, SUPABASE_TOKEN } from "astro:env/server";
 import type { Entry, User } from "./types";
 
 let client: SupabaseClient | undefined;
@@ -25,12 +25,42 @@ const toEntry = (row: { id: string | number; name: string }): Entry => ({
 });
 
 export const listEntries = async (): Promise<Entry[]> => {
-  const { data, error } = await db().from("project").select("id, name");
+  const { data, error } = await db()
+    .from("project")
+    .select("id, name")
+    .order("id");
 
   if (error) {
     throw new Error(error.message);
   }
   return data.map(toEntry);
+};
+
+export const addEntry = async (name: string): Promise<Entry> => {
+  const { data, error } = await db()
+    .from("project")
+    .insert({ name })
+    .select("id, name")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return toEntry(data);
+};
+
+// Returns false if there was no entry with that id.
+export const deleteEntry = async (id: string): Promise<boolean> => {
+  const { data, error } = await db()
+    .from("project")
+    .delete()
+    .eq("id", id)
+    .select("id");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data.length > 0;
 };
 
 // Works out who sent a request from the token ./client.ts attaches.
@@ -48,3 +78,6 @@ export const currentUser = async (request: Request): Promise<User | null> => {
   }
   return { id: data.user.id, name: data.user.user_metadata.full_name ?? "" };
 };
+
+export const canEdit = (user: User | null) =>
+  user !== null && OWNER_USER_ID !== undefined && user.id === OWNER_USER_ID;

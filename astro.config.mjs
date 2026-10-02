@@ -28,6 +28,13 @@ export default defineConfig({
         access: "secret",
         optional: true,
       }),
+      // The user ID (in the current backend) allowed to add and delete
+      // entries. Unset means no one can.
+      OWNER_USER_ID: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
     },
   },
 });
