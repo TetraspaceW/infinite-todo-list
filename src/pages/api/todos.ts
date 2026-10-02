@@ -1,9 +1,9 @@
+import type { APIRoute } from "astro";
 import { createClient } from "@supabase/supabase-js";
+import { SUPABASE_ENDPOINT } from "astro:env/client";
+import { SUPABASE_TOKEN } from "astro:env/server";
 
-export const revalidate = 60;
-
-export async function GET() {
-  const { SUPABASE_ENDPOINT, SUPABASE_TOKEN } = process.env;
+export const GET: APIRoute = async () => {
   if (SUPABASE_ENDPOINT && SUPABASE_TOKEN) {
     const client = createClient(SUPABASE_ENDPOINT, SUPABASE_TOKEN);
 
@@ -15,7 +15,15 @@ export async function GET() {
       return new Response(JSON.stringify(error), { status: 500 });
     }
 
-    return Response.json({ projects });
+    // Revalidate projects every minute
+    return Response.json(
+      { projects },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate",
+        },
+      }
+    );
   }
   return new Response("SUPABASE_ENDPOINT not set.", { status: 500 });
-}
+};

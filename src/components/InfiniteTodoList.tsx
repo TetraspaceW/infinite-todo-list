@@ -1,11 +1,8 @@
-"use client";
-
-import Link from "next/link";
 import useSWR from "swr";
 
-import { supabase } from "./supabase";
+import { supabase } from "../lib/supabase";
 import { useEffect, useState } from "react";
-import { User } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 
 type Todo = {
   name: string;
@@ -49,7 +46,7 @@ const Home = () => {
         {user ? (
           `Logged in as ${user.user_metadata.full_name}`
         ) : (
-          <Link href="/auth">Log in</Link>
+          <a href="/auth">Log in</a>
         )}
       </p>
     </main>
