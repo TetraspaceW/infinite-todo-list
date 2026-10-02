@@ -19,6 +19,17 @@ const db = () => {
   return client;
 };
 
+// Supabase reports network failures as just "fetch failed"; the real reason
+// (host not found, connection refused, ...) is buried in error.details.
+const dbError = (error: { message: string; details: string }) => {
+  const cause = error.details?.match(/Caused by: .*/)?.[0];
+  return new Error(
+    cause
+      ? `${error.message}. ${cause} (connecting to ${SUPABASE_ENDPOINT})`
+      : error.message
+  );
+};
+
 const toEntry = (row: { id: string | number; name: string }): Entry => ({
   id: String(row.id),
   name: row.name,
@@ -31,7 +42,7 @@ export const listEntries = async (): Promise<Entry[]> => {
     .order("id");
 
   if (error) {
-    throw new Error(error.message);
+    throw dbError(error);
   }
   return data.map(toEntry);
 };
@@ -44,7 +55,7 @@ export const addEntry = async (name: string): Promise<Entry> => {
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    throw dbError(error);
   }
   return toEntry(data);
 };
@@ -58,7 +69,7 @@ export const deleteEntry = async (id: string): Promise<boolean> => {
     .select("id");
 
   if (error) {
-    throw new Error(error.message);
+    throw dbError(error);
   }
   return data.length > 0;
 };
