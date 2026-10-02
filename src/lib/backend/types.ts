@@ -9,6 +9,7 @@ export type Entry = {
 export type User = {
   id: string;
   name: string;
+  discordId: string | null;
 };
 
 export type Me = {

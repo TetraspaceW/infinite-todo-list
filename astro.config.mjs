@@ -13,24 +13,32 @@ export default defineConfig({
   },
   env: {
     schema: {
-      SUPABASE_ENDPOINT: envField.string({
-        context: "client",
-        access: "public",
-        optional: true,
-      }),
-      SUPABASE_ANON_TOKEN: envField.string({
-        context: "client",
-        access: "public",
-        optional: true,
-      }),
-      SUPABASE_TOKEN: envField.string({
+      // Set automatically by Vercel's Neon integration.
+      DATABASE_URL: envField.string({
         context: "server",
         access: "secret",
         optional: true,
       }),
-      // The user ID (in the current backend) allowed to add and delete
-      // entries. Unset means no one can.
-      OWNER_USER_ID: envField.string({
+      // Any long random string; signs login cookies.
+      BETTER_AUTH_SECRET: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      // From the Discord developer portal (OAuth2 page of your app).
+      DISCORD_CLIENT_ID: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      DISCORD_CLIENT_SECRET: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      // The Discord user ID allowed to add and delete entries. Unset means
+      // no one can.
+      OWNER_DISCORD_ID: envField.string({
         context: "server",
         access: "secret",
         optional: true,

@@ -1,94 +1,70 @@
 // Server half of the backend black box: reading and writing entries, and
 // working out who is making a request. Swapping backends means rewriting this
-// file and ./client.ts.
+// folder; the rest of the app only uses this file, ./client.ts and ./types.ts.
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { SUPABASE_ENDPOINT } from "astro:env/client";
-import { OWNER_USER_ID, SUPABASE_TOKEN } from "astro:env/server";
+import { OWNER_DISCORD_ID } from "astro:env/server";
+import { and, asc, eq } from "drizzle-orm";
+import { auth } from "./auth";
+import { db } from "./db";
+import { account, project } from "./schema";
 import type { Entry, User } from "./types";
 
-let client: SupabaseClient | undefined;
-
-const db = () => {
-  if (!SUPABASE_ENDPOINT || !SUPABASE_TOKEN) {
-    throw new Error("SUPABASE_ENDPOINT or SUPABASE_TOKEN not set.");
-  }
-  client ??= createClient(SUPABASE_ENDPOINT, SUPABASE_TOKEN, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  return client;
-};
-
-// Supabase reports network failures as just "fetch failed"; the real reason
-// (host not found, connection refused, ...) is buried in error.details.
-const dbError = (error: { message: string; details: string }) => {
-  const cause = error.details?.match(/Caused by: .*/)?.[0];
-  return new Error(
-    cause
-      ? `${error.message}. ${cause} (connecting to ${SUPABASE_ENDPOINT})`
-      : error.message
-  );
-};
-
-const toEntry = (row: { id: string | number; name: string }): Entry => ({
+const toEntry = (row: { id: number; name: string }): Entry => ({
   id: String(row.id),
   name: row.name,
 });
 
 export const listEntries = async (): Promise<Entry[]> => {
-  const { data, error } = await db()
-    .from("project")
-    .select("id, name")
-    .order("id");
-
-  if (error) {
-    throw dbError(error);
-  }
-  return data.map(toEntry);
+  const rows = await db()
+    .select({ id: project.id, name: project.name })
+    .from(project)
+    .orderBy(asc(project.id));
+  return rows.map(toEntry);
 };
 
 export const addEntry = async (name: string): Promise<Entry> => {
-  const { data, error } = await db()
-    .from("project")
-    .insert({ name })
-    .select("id, name")
-    .single();
-
-  if (error) {
-    throw dbError(error);
-  }
-  return toEntry(data);
+  const [row] = await db()
+    .insert(project)
+    .values({ name })
+    .returning({ id: project.id, name: project.name });
+  return toEntry(row);
 };
 
 // Returns false if there was no entry with that id.
 export const deleteEntry = async (id: string): Promise<boolean> => {
-  const { data, error } = await db()
-    .from("project")
-    .delete()
-    .eq("id", id)
-    .select("id");
-
-  if (error) {
-    throw dbError(error);
+  const numericId = Number(id);
+  if (!Number.isSafeInteger(numericId)) {
+    return false;
   }
-  return data.length > 0;
+  const deleted = await db()
+    .delete(project)
+    .where(eq(project.id, numericId))
+    .returning({ id: project.id });
+  return deleted.length > 0;
 };
 
-// Works out who sent a request from the token ./client.ts attaches.
+// Works out who sent a request from their login cookie.
 export const currentUser = async (request: Request): Promise<User | null> => {
-  const token = request.headers
-    .get("Authorization")
-    ?.match(/^Bearer (.+)$/)?.[1];
-  if (!token) {
+  const session = await auth().api.getSession({ headers: request.headers });
+  if (!session) {
     return null;
   }
 
-  const { data, error } = await db().auth.getUser(token);
-  if (error || !data.user) {
-    return null;
-  }
-  return { id: data.user.id, name: data.user.user_metadata.full_name ?? "" };
+  const [discord] = await db()
+    .select({ discordId: account.accountId })
+    .from(account)
+    .where(
+      and(eq(account.userId, session.user.id), eq(account.providerId, "discord"))
+    );
+  return {
+    id: session.user.id,
+    name: session.user.name,
+    discordId: discord?.discordId ?? null,
+  };
 };
 
+// The list owner is whoever logs in with the Discord account OWNER_DISCORD_ID.
 export const canEdit = (user: User | null) =>
-  user !== null && OWNER_USER_ID !== undefined && user.id === OWNER_USER_ID;
+  user !== null &&
+  OWNER_DISCORD_ID !== undefined &&
+  user.discordId === OWNER_DISCORD_ID;

@@ -8,16 +8,20 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/migrate.mjs && astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node scripts/migrate.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^7.0.0",
     "@astrojs/vercel": "^11.0.11",
-    "@supabase/supabase-js": "^2.39.1",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.5",
+    "better-auth": "^1.7.7",
+    "drizzle-orm": "^0.45.3",
+    "pg": "^8.23.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "swr": "^2.2.4",
@@ -25,8 +29,10 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "drizzle-kit": "^0.31.11",
     "typescript": "^5"
   }
 }
