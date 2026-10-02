@@ -1,0 +1,10 @@
+---
+import Layout from "../layouts/Layout.astro";
+import InfiniteTodoList from "../components/InfiniteTodoList";
+---
+
+<Layout>
+  <InfiniteTodoList client:only="react">
+    <p slot="fallback">Loading...</p>
+  </InfiniteTodoList>
+</Layout>
