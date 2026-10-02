@@ -1,31 +1,24 @@
 import { useState } from "react";
-import { supabase } from "../lib/supabase";
+import {
+  signInWithDiscord,
+  signInWithPassword,
+  signUp,
+} from "../lib/backend/client";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const login = async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: username,
-      password: password,
-    });
+    await signInWithPassword(username, password);
   };
 
   const register = async () => {
-    const { data, error } = await supabase.auth.signUp({
-      email: username,
-      password: password,
-      options: {
-        emailRedirectTo: "https://todo.thetetra.space/",
-      },
-    });
+    await signUp(username, password);
   };
 
   const loginWithDiscord = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "discord",
-    });
+    await signInWithDiscord();
   };
 
   return (

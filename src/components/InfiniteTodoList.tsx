@@ -1,12 +1,8 @@
 import useSWR from "swr";
 
-import { supabase } from "../lib/supabase";
+import { fetchMe } from "../lib/api";
 import { useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
-
-type Todo = {
-  name: string;
-};
+import type { Entry, User } from "../lib/backend/types";
 
 const Home = () => {
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -21,9 +17,7 @@ const Home = () => {
 
   useEffect(() => {
     const getAndSetUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user } = await fetchMe().catch(() => ({ user: null }));
 
       setUser(user);
       setUserLoading(false);
@@ -38,13 +32,13 @@ const Home = () => {
     <main>
       <h1>Infinite To-Do List</h1>
       <ul>
-        {data?.projects?.map((todo: Todo) => (
-          <li key={todo.name}>{todo.name}</li>
+        {data?.projects?.map((todo: Entry) => (
+          <li key={todo.id}>{todo.name}</li>
         ))}
       </ul>
       <p>
         {user ? (
-          `Logged in as ${user.user_metadata.full_name}`
+          `Logged in as ${user.name}`
         ) : (
           <a href="/auth">Log in</a>
         )}
